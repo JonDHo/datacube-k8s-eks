@@ -72,7 +72,6 @@ resource "helm_release" "flux" {
 
   depends_on = [
     null_resource.apply_flux_crd,
-    module.tiller,
   ]
 }
 
@@ -81,7 +80,7 @@ resource "helm_release" "flux-helm-operator" {
   name       = "helm-operator"
   repository = "https://charts.fluxcd.io"
   chart      = "helm-operator"
-  version    = "0.3.0"
+  version    = "v1.0.1"
   namespace  = kubernetes_namespace.flux[0].metadata[0].name
 
   set {
@@ -89,15 +88,19 @@ resource "helm_release" "flux-helm-operator" {
     value = "flux-git-deploy"
   }
 
+  set {
+    name  = "helm.versions"
+    value = "v2,v3"
+  }
+
   depends_on = [
     null_resource.apply_flux_crd,
     helm_release.flux,
-    module.tiller,
   ]
 }
 
 data "http" "flux_helm_release_crd_yaml" {
-  url = "https://raw.githubusercontent.com/fluxcd/helm-operator/chart-0.3.0/deploy/flux-helm-release-crd.yaml"
+  url = "https://raw.githubusercontent.com/fluxcd/helm-operator/v1.0.1/deploy/crds.yaml"
 }
 
 
